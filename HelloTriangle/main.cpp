@@ -34,6 +34,74 @@ int main() {
 	glEnable(GL_DEPTH_TEST); // enable depth testing
 	glDepthFunc(GL_LESS); // depth-interprets a smaller value as "closer"
 
+
+	// ---- Making a Triangle ----
+
+	GLfloat trianglePoints[] = {
+		0.0f, 0.5f, 0.0f, // Top point
+		0.5f, -0.5f, 0.0f, // Bottom Right
+		-0.5f, -0.5f, 0.0f // Bottom Left
+	};
+
+	// Generating an empty buffer
+	GLuint vbo = 0; // GLuint is a consistent typedef classification of openGL's unsigned int, ideal for OpenGL stuff
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(trianglePoints), trianglePoints, GL_STATIC_DRAW);
+	// ^^^ This Line ^^^: Tells OpenGL size of buffer and element location
+
+	// Generating a Vertrex Attribute Object
+	GLuint vao = 0;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	// Writing our Vertex Shader:
+	const char* vertexShader =
+		"#version 410\n"
+		"in vec3 vp;"
+		"void main(){"
+		" gl_Position = vec4(vp, 1.0);"
+		"}";
+
+	// Writing our Fragment Shader:
+	const char* fragmentShader =
+		"#version 410\n"
+		"out vec4 frag_colour;"
+		"void main(){"
+		" frag_colour = vec4(0.5, 0.0, 0.5, 1.0);"
+		"}";
+
+	// Loading Shaders
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vs, 1, &vertexShader, NULL);
+	glCompileShader(vs);
+
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fs, 1, &fragmentShader, NULL);
+	glCompileShader(fs);
+
+	// Creating a Shader Program
+	GLuint shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vs);
+	glAttachShader(shaderProgram, fs);
+	glLinkProgram(shaderProgram);
+
+
+	// Drawing the Triangle 
+	while (!glfwWindowShouldClose(window)) {
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUseProgram(shaderProgram);
+		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glfwPollEvents();
+		glfwSwapBuffers(window);
+	}
+
+
 	glfwTerminate();
 	return 0;
 
