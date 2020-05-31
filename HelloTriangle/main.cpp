@@ -5,14 +5,31 @@
 #include <stdarg.h>
 #define GL_LOG_FILE "gl.log"
 
+// TODO:
+// - Figure out how to use fopen_s and other s variants for c functions used here ( We don't want to be using Depracted functions)
+// - Do a bit of C programming! It will help us program more efficiently!
+//		- Do the tutorials here: https://www.programiz.com/c-programming
+
 // Setting up Visual Studio for OpenGL:
 // https://www.wikihow.com/Set-Up-OpenGL-GLFW-GLEW-GLM-on-a-Project-with-Visual-Studio
 
 bool restart_gl_log();
 bool gl_log(const char* message, ...);
 bool gl_log_err(const char* message, ...);
+void glfw_error_callback(int error, const char* description);
 
 int main() {
+
+	if (!restart_gl_log()) {
+		// Quit?
+	}
+
+	// Start context
+	gl_log("starting GLFW\n%s\n", glfwGetVersionString());
+
+	// Register our callback error function
+	glfwSetErrorCallback(glfw_error_callback);
+
 	if (!glfwInit()) {
 		fprintf(stderr, "ERROR: could not start GLFW3\n");
 		return -1;
@@ -116,7 +133,7 @@ int main() {
 
 // Opens log file and prints time and date on top
 bool restart_gl_log() {
-	// See the following page for fopen:
+	// See the following page for fopen_s:
 	// https://www.tutorialspoint.com/c_standard_library/c_function_fopen.htm
 	FILE* file = fopen(GL_LOG_FILE, "w");
 	if (!file) {
@@ -178,4 +195,9 @@ bool gl_log_err(const char* message, ...) {
 	va_end(argptr);
 	fclose(file);
 	return true;
+}
+
+// Logs error messages in which occured in GLFW initialisation
+void glfw_error_callback(int error, const char* description) {
+	gl_log_err("GLFW ERROR: code %i msg: %s\n", error, description);
 }
