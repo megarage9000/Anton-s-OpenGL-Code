@@ -1,9 +1,16 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
+#include <time.h>
+#include <stdarg.h>
+#define GL_LOG_FILE "gl.log"
 
 // Setting up Visual Studio for OpenGL:
 // https://www.wikihow.com/Set-Up-OpenGL-GLFW-GLEW-GLM-on-a-Project-with-Visual-Studio
+
+bool restart_gl_log();
+bool gl_log(const char* message, ...);
+bool gl_log_err(const char* message, ...);
 
 int main() {
 	if (!glfwInit()) {
@@ -105,4 +112,70 @@ int main() {
 	glfwTerminate();
 	return 0;
 
+}
+
+// Opens log file and prints time and date on top
+bool restart_gl_log() {
+	// See the following page for fopen:
+	// https://www.tutorialspoint.com/c_standard_library/c_function_fopen.htm
+	FILE* file = fopen(GL_LOG_FILE, "w");
+	if (!file) {
+		fprintf(
+			stderr,
+			"ERROR: could not open GL_LOG_FILE log file %s for writing\n",
+			GL_LOG_FILE
+		);
+		return false;
+	}
+
+	time_t now = time(NULL);
+	char* date = ctime(&now);
+	fprintf(file, "GL_LOG_FILE log. local time %s\n", date);
+	fclose(file);
+	return true;
+}
+
+// See this page on what the ... means:
+// https://stackoverflow.com/questions/2735587/in-a-c-function-declaration-what-does-as-the-last-parameter-do
+bool gl_log(const char* message, ...) {
+
+	va_list argptr;
+	FILE* file = fopen(GL_LOG_FILE, "a");
+	if (!file) {
+		fprintf(
+			stderr,
+			"ERROR: could not open GL_LOG_FILE %s file for appending\n",
+			GL_LOG_FILE
+		);
+		return false;
+	}
+	va_start(argptr, message);
+	vfprintf(file, message, argptr);
+	va_end(argptr);
+	fclose(file);
+	return true;
+}
+
+
+bool gl_log_err(const char* message, ...) {
+	
+	va_list argptr;
+	FILE* file = fopen(GL_LOG_FILE, "a");
+	if (!file) {
+		fprintf(
+			stderr,
+			"ERROR: could not open GL_LOG_FILE %s file for appending\n",
+			GL_LOG_FILE
+		);
+		return false;
+	}
+	va_start(argptr, message);
+	vfprintf(file, message, argptr);
+	va_end(argptr);
+
+	va_start(argptr, message);
+	vfprintf(stderr, message, argptr);
+	va_end(argptr);
+	fclose(file);
+	return true;
 }
