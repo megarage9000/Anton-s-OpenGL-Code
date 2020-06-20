@@ -43,6 +43,10 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	// Setting up Anti-aliasing. The number on the right determines how "smooth" it 
+	// should be
+	glfwWindowHint(GLFW_SAMPLES, 4);
+
 	// ---- Creating GLFW window ----
 	GLFWwindow* window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
 	if (!window) {
@@ -139,6 +143,7 @@ int main() {
 	return 0;
 
 }
+// ------------------------------------- Debug Functions(written in C LOL) ------------------------------------- //
 
 // Opens log file and prints time and date on top
 bool restart_gl_log() {
