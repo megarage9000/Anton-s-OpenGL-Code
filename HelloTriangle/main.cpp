@@ -2,6 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <time.h>
+
+// This header allows variable amount of arguments
 #include <stdarg.h>
 #define GL_LOG_FILE "gl.log"
 
@@ -35,6 +37,12 @@ int main() {
 		return -1;
 	}
 
+	// ---- Setting window creation to be OpenGL 3.2 forward compatible core profile ----
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	// ---- Creating GLFW window ----
 	GLFWwindow* window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
 	if (!window) {
@@ -47,6 +55,7 @@ int main() {
 	// ---- Creating GLEW extension handler ----
 	glewExperimental = GL_TRUE;
 	glewInit();
+
 
 	// ---- Version Information ----
 	const GLubyte* renderer = glGetString(GL_RENDERER);
