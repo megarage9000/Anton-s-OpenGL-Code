@@ -15,12 +15,26 @@
 // Setting up Visual Studio for OpenGL:
 // https://www.wikihow.com/Set-Up-OpenGL-GLFW-GLEW-GLM-on-a-Project-with-Visual-Studio
 
+// Logging functions
 bool restart_gl_log();
 bool gl_log(const char* message, ...);
 bool gl_log_err(const char* message, ...);
+
+// callback functions
 void glfw_error_callback(int error, const char* description);
+void glfw_window_size_callback(GLFWwindow* window, int width, int height);
+void glfw_framebuffer_resize_callback(GLFWwindow* window, int width, int height);
+
+// reported window size may be good to know for a few things
+int g_win_width = 640;
+int g_win_height = 480;
+
+// keep track of framebuffer size for things like viewport and the mouse cursor
+int g_fb_width = 640;
+int g_fb_height = 480;
 
 int main() {
+
 
 	if (!restart_gl_log()) {
 		// Quit?
@@ -47,14 +61,25 @@ int main() {
 	// should be
 	glfwWindowHint(GLFW_SAMPLES, 4);
 
+	// Setting window to fullscreen
+	GLFWmonitor* mon = glfwGetPrimaryMonitor();
+	const GLFWvidmode* vmode = glfwGetVideoMode(mon);
+
+
 	// ---- Creating GLFW window ----
-	GLFWwindow* window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(g_win_width, g_win_height, "Extended Fullscreen video", NULL, NULL);
+
+	// - uncomment for fullscreen
+	// GLFWwindow* window = glfwCreateWindow(vmode->width, vmode->height, "Extended Fullscreen video", mon, NULL);
 	if (!window) {
 		fprintf(stderr, "ERROR: could not open window with GLFW3\n");
 		glfwTerminate();
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
+
+	glfwSetWindowSizeCallback(window, glfw_window_size_callback);
+	glfwSetFramebufferSizeCallback(window, glfw_framebuffer_resize_callback);
 
 	// ---- Creating GLEW extension handler ----
 	glewExperimental = GL_TRUE;
@@ -131,11 +156,17 @@ int main() {
 	while (!glfwWindowShouldClose(window)) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, g_fb_width, g_fb_height);
 		glUseProgram(shaderProgram);
 		glBindVertexArray(vao);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glfwPollEvents();
 		glfwSwapBuffers(window);
+
+		// Allows user to press escape to exit from window
+		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+			glfwSetWindowShouldClose(window, 1);
+		}
 	}
 
 
@@ -211,7 +242,20 @@ bool gl_log_err(const char* message, ...) {
 	return true;
 }
 
+// ------------------------------------- Callback methods -------------------------------------
+
 // Logs error messages in which occured in GLFW initialisation
 void glfw_error_callback(int error, const char* description) {
 	gl_log_err("GLFW ERROR: code %i msg: %s\n", error, description);
+}
+
+void glfw_window_size_callback(GLFWwindow* window, int width, int height) {
+	g_win_width = width;
+	g_win_height = height;
+	gl_log("Window size set to: height = %d, width %d", g_win_width, g_win_height);
+}
+void glfw_framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
+	g_fb_width = width;
+	g_fb_height = height;
+	gl_log("Framebuffer resize set to size set to: height = %d, width %d", g_fb_width, g_fb_height);
 }
