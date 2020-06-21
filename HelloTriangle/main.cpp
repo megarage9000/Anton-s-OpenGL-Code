@@ -7,11 +7,6 @@
 #include <stdarg.h>
 #define GL_LOG_FILE "gl.log"
 
-// TODO:
-// - Figure out how to use fopen_s and other s variants for c functions used here ( We don't want to be using Depracted functions)
-// - Do a bit of C programming! It will help us program more efficiently!
-//		- Do the tutorials here: https://www.programiz.com/c-programming
-
 // Setting up Visual Studio for OpenGL:
 // https://www.wikihow.com/Set-Up-OpenGL-GLFW-GLEW-GLM-on-a-Project-with-Visual-Studio
 
@@ -24,6 +19,8 @@ bool gl_log_err(const char* message, ...);
 void glfw_error_callback(int error, const char* description);
 void glfw_window_size_callback(GLFWwindow* window, int width, int height);
 void glfw_framebuffer_resize_callback(GLFWwindow* window, int width, int height);
+
+void log_gl_params();
 
 // reported window size may be good to know for a few things
 int g_win_width = 640;
@@ -40,8 +37,7 @@ int main() {
 		// Quit?
 	}
 
-	// Start context
-	gl_log("starting GLFW\n%s\n", glfwGetVersionString());
+	
 
 	// Register our callback error function
 	glfwSetErrorCallback(glfw_error_callback);
@@ -80,6 +76,10 @@ int main() {
 
 	glfwSetWindowSizeCallback(window, glfw_window_size_callback);
 	glfwSetFramebufferSizeCallback(window, glfw_framebuffer_resize_callback);
+
+	// Start context
+	gl_log("starting GLFW\n%s\n", glfwGetVersionString());
+	log_gl_params();
 
 	// ---- Creating GLEW extension handler ----
 	glewExperimental = GL_TRUE;
@@ -199,6 +199,7 @@ bool restart_gl_log() {
 
 // See this page on what the ... means:
 // https://stackoverflow.com/questions/2735587/in-a-c-function-declaration-what-does-as-the-last-parameter-do
+// Allows us to log our files
 bool gl_log(const char* message, ...) {
 
 	va_list argptr;
@@ -218,7 +219,7 @@ bool gl_log(const char* message, ...) {
 	return true;
 }
 
-
+// Logs an error to our Log file
 bool gl_log_err(const char* message, ...) {
 	
 	va_list argptr;
@@ -258,4 +259,57 @@ void glfw_framebuffer_resize_callback(GLFWwindow* window, int width, int height)
 	g_fb_width = width;
 	g_fb_height = height;
 	gl_log("Framebuffer resize set to size set to: height = %d, width %d", g_fb_width, g_fb_height);
+}
+
+
+// Logs the parameters of openGL, telling us the
+// capabilities of our graphics hardware
+void log_gl_params() {
+
+	GLenum params[] = {
+		GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
+		GL_MAX_CUBE_MAP_TEXTURE_SIZE,
+		GL_MAX_DRAW_BUFFERS,
+		GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,
+		GL_MAX_TEXTURE_IMAGE_UNITS,
+		GL_MAX_TEXTURE_SIZE,
+		GL_MAX_VARYING_FLOATS,
+		GL_MAX_VERTEX_ATTRIBS,
+		GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
+		GL_MAX_VERTEX_UNIFORM_COMPONENTS,
+		GL_MAX_VIEWPORT_DIMS,
+		GL_STEREO
+	};
+
+	const char* names[] = {
+		"GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS",
+		"GL_MAX_CUBE_MAP_TEXTURE_SIZE",
+		"GL_MAX_DRAW_BUFFERS",
+		"GL_MAX_FRAGMENT_UNIFORM_COMPONENTS",
+		"GL_MAX_TEXTURE_IMAGE_UNITS",
+		"GL_MAX_TEXTURE_SIZE",
+		"GL_MAX_VARYING_FLOATS",
+		"GL_MAX_VERTEX_ATTRIBS",
+		"GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS",
+		"GL_MAX_VERTEX_UNIFORM_COMPONENTS",
+		"GL_MAX_VIEWPORT_DIMS",
+		"GL_STEREO", 
+	};
+
+	gl_log("GL Context Params:\n");
+	// integers-only works if the order is 0-10 integer return types
+	for (int i = 0; i < 10; i++) {
+		int v = 0;
+		glGetIntegerv(params[i], &v);
+		gl_log("%s %i\n", names[i], v);
+	}
+	// others
+	int v[2];
+	v[0] = v[1] = 0;
+	glGetIntegerv(params[10], v);
+	gl_log("%s %i %i\n", names[10], v[0], v[1]);
+	unsigned char s = 0;
+	glGetBooleanv(params[11], &s);
+	gl_log("%s %u\n", names[11], (unsigned int)s);
+	gl_log("----------------------------------\n");
 }
