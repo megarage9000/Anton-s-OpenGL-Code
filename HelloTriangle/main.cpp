@@ -261,6 +261,7 @@ void glfw_framebuffer_resize_callback(GLFWwindow* window, int width, int height)
 	gl_log("Framebuffer resize set to size set to: height = %d, width %d", g_fb_width, g_fb_height);
 }
 
+// ------------------------------------- Parameter logging ------------------------------------- 
 
 // Logs the parameters of openGL, telling us the
 // capabilities of our graphics hardware
